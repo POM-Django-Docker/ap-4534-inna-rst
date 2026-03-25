@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Orders{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Orders Management</h2>
+    <a href="{% url 'order:order_create' %}" class="btn btn-primary">+ Create Order</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Book</th>
+                    <th>Reader</th>
+                    <th>Created</th>
+                    <th>Planned return</th>
+                    <th>Returned</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.pk }}</td>
+                    <td>{{ order.book.name }}</td>
+                    <td>{{ order.user.email }}</td>
+                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ order.plated_end_at|date:"d.m.Y H:i"|default:"—" }}</td>
+                    <td>{{ order.end_at|date:"d.m.Y H:i"|default:"—" }}</td>
+                    <td>
+                        {% if order.end_at %}
+                            <span class="badge bg-success">Returned</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Active</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'order:order_edit' order.pk %}"
+                           class="btn btn-outline-primary btn-sm me-1">Edit</a>
+                        <form action="{% url 'order:order_delete' order.pk %}" method="POST" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                    onclick="return confirm('Are you sure you want to delete this order?')">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No orders found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

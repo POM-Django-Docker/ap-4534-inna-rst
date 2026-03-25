@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}List of Books{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Library Catalog</h2>
+    {% if user.is_authenticated and user.is_librarian %}
+        <a href="{% url 'book:book_create' %}" class="btn btn-primary">+ Add New Book</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for book in books %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">{{ book.name }}</h5>
+
+                    <h6 class="card-subtitle mb-2 text-muted">
+                        Authors:
+                        {% for author in book.authors.all %}
+                            {{ author.name }} {{ author.surname }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Not specified
+                        {% endfor %}
+                    </h6>
+
+                    <p class="card-text mt-3">{{ book.description|truncatechars:100 }}</p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        In stock:
+                        <span class="badge bg-success rounded-pill">{{ book.count }} pcs.</span>
+                    </li>
+                </ul>
+                <div class="card-footer bg-white border-top-0">
+                    {% if user.is_authenticated and user.is_librarian %}
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'book:book_edit' book.pk %}"
+                               class="btn btn-outline-primary btn-sm flex-grow-1">Edit</a>
+                            <form action="{% url 'book:book_delete' book.pk %}" method="POST" class="flex-grow-1">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100"
+                                        onclick="return confirm('Are you sure you want to delete this book?')">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <button class="btn btn-outline-primary w-100">Read more</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col">
+            <div class="alert alert-info">There are no books in the library yet.</div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
